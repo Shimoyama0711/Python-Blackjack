@@ -1,11 +1,12 @@
 import datetime
 import socket
+import sys
 
 N = 2048
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # host = "172.16.14.0"
-host = "localhost"
+host = sys.argv[1]
 port = 8000
 s.connect((host, port))
 
