@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Navbar Template</title>
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-lg bg-dark navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{{ url_for('index') }}">
+            <i class="bi-suit-spade-fill"></i>
+            Python-Blackjack
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"  data-bs-target="#navbarContents" aria-controls="navbarContents" aria-expanded="false" aria-label="Toggle Navbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarContents">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('index') }}">
+                        <i class="bi-house-fill"></i>
+                        Home
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="https://github.com/Shimoyama0711/Python-Blackjack">
+                        <i class="bi-github"></i>
+                        GitHub
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('leaderboard') }}">
+                        <i class="bi-graph-up"></i>
+                        Leaderboard
+                    </a>
+                </li>
+            </ul>
+            <ul class="navbar-nav">
+                {% if session.username|length > 0 %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        {{ session.username }} さん
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item" href="/settings">
+                            <i class="bi-gear-fill"></i> Settings
+                        </a></li>
+                        <li><a class="dropdown-item" href="/logout">
+                            <i class="bi-power"></i> Logout
+                        </a></li>
+                    </ul>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('login') }}">
+                        <i class="bi-arrow-right-square-fill"></i>
+                        Login
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+</body>
+
+</html>

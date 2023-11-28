@@ -2,6 +2,7 @@ import socket
 import threading
 import datetime
 import time
+import mysql.connector as mydb
 import random
 
 PORT = 8000  # ポート
@@ -13,6 +14,14 @@ suits = ["♥", "♦", "♣", "♠"]  # スート
 numbers = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]  # 数字
 
 in_game = False  # ゲーム中かどうかを判定
+
+conn = mydb.connect(
+    host='localhost',
+    port='3306',
+    user='root',
+    password='BTcfrLkK1FFU',
+    database='blackjack'
+)
 
 
 # 「ようこそ」メッセージ
@@ -48,7 +57,6 @@ __   __ _____  _   _   _    _  _____  _   _  _
 \u001b[0m                                            
 """
 
-
 # 「YOU LOSE...」メッセージ
 lose_message = f"""
 \u001b[36m
@@ -60,7 +68,6 @@ __   __ _____  _   _   _      _____  _____  _____
   \\_/   \\___/  \\___/  \\_____/ \\___/ \\____/ \\____/ (_)(_)(_)
 \u001b[0m                                            
 """
-
 
 # 「DRAW」メッセージ
 draw_message = f"""
@@ -90,8 +97,48 @@ def reset_deck():
     return array  # 山札を返す
 
 
+# IPアドレスのデータが存在しなければ INSERT IGNORE INTO を実行します
+def create_user_data(ip_address):
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute(f"INSERT IGNORE INTO users VALUES ('{ip_address}', 'Anonymous', '0', '0', './static/img/anonymous.png')")
+    conn.commit()
+    cursor.close()
+
+
+# 勝利した場合の処理を行います
+def update_score_win(ip_address, additional):
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute(f"SELECT * FROM users WHERE ip_address = '{ip_address}'")
+
+    user = cursor.fetchone()
+    streak = int(user["streak"])
+    final_additional = int(additional * (1 + streak / 10))  # 倍率設定
+
+    cursor.execute(
+        f"UPDATE users SET score = (score + {final_additional}), streak = streak + 1 WHERE ip_address = '{ip_address}'")
+    conn.commit()
+    cursor.close()
+
+
+# 引き分け・敗北した場合の処理を行います
+def update_score_draw_or_lose(ip_address, additional):
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute(f"UPDATE users SET score = (score + {additional}), streak = 0 WHERE ip_address = '{ip_address}'")
+    conn.commit()
+    cursor.close()
+
+
 # クライアントへの時間送信
 def main(client, client_no):
+    host = socket.gethostname()
+    print(f"host: {host}")
+
+    ip_address = socket.gethostbyname(host)
+    print(f"ip_address: {ip_address}")
+
+    create_user_data(ip_address)
     send_welcome_message(client)
 
     deck = reset_deck()
@@ -235,25 +282,28 @@ Server: {s_total}
             if c_total > s_total:  # C の勝利
                 print(lose_message)
                 client.send(win_message.encode("utf-8"))
+                update_score_win(ip_address, 50)
             elif c_total < s_total:  # S の勝利
                 print(win_message)
                 client.send(lose_message.encode("utf-8"))
+                update_score_draw_or_lose(ip_address, -10)
             else:  # 引き分け
                 print(draw_message)
                 client.send(draw_message.encode("utf-8"))
+                update_score_draw_or_lose(ip_address, 3)
         else:  # S が Bust ならば C の勝利
             print(lose_message)
             client.send(win_message.encode("utf-8"))
+            update_score_win(ip_address, 50)
     else:  # C が Bust したならば
         if s_total <= 21:  # S が21以下ならば S の勝利
             print(win_message)
             client.send(lose_message.encode("utf-8"))
+            update_score_draw_or_lose(ip_address, -10)
         else:  # S が Bust ならば引き分け
             print(draw_message)
             client.send(draw_message.encode("utf-8"))
-
-
-
+            update_score_draw_or_lose(ip_address, 3)
 
     in_game = False  # ゲーム中のフラグを解除
 
