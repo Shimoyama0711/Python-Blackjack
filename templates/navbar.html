@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Navbar Template</title>
+
+    <style>
+        .avatar {
+            border-radius: 50%; /* 50%で丸くなります */
+            width: 48px; /* 画像の幅を設定 */
+            height: 48px; /* 画像の高さを設定 */
+            object-fit: cover; /* 画像のサイズを調整 */
+        }
+    </style>
 </head>
 
 <body>
@@ -42,6 +51,7 @@
                 {% if session.username|length > 0 %}
                 <li class="nav-item dropdown">
                     <a class="nav-link" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img class="avatar" src="{{ avatar }}" alt="{{ session.username }}">
                         {{ session.username }} さん
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">

@@ -15,14 +15,6 @@ numbers = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]  # 
 
 in_game = False  # ゲーム中かどうかを判定
 
-conn = mydb.connect(
-    host='localhost',
-    port='3306',
-    user='root',
-    password='BTcfrLkK1FFU',
-    database='blackjack'
-)
-
 
 # 「ようこそ」メッセージ
 def send_welcome_message(client):
@@ -99,6 +91,14 @@ def reset_deck():
 
 # IPアドレスのデータが存在しなければ INSERT IGNORE INTO を実行します
 def create_user_data(ip_address):
+    conn = mydb.connect(
+        host='localhost',
+        port='3306',
+        user='root',
+        password='BTcfrLkK1FFU',
+        database='blackjack'
+    )
+
     cursor = conn.cursor(dictionary=True)
     cursor.execute(f"INSERT IGNORE INTO users VALUES ('{ip_address}', 'Anonymous', '0', '0', './static/img/anonymous.png')")
     conn.commit()
@@ -107,6 +107,13 @@ def create_user_data(ip_address):
 
 # 勝利した場合の処理を行います
 def update_score_win(ip_address, additional):
+    conn = mydb.connect(
+        host='localhost',
+        port='3306',
+        user='root',
+        password='BTcfrLkK1FFU',
+        database='blackjack'
+    )
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute(f"SELECT * FROM users WHERE ip_address = '{ip_address}'")
@@ -119,15 +126,24 @@ def update_score_win(ip_address, additional):
         f"UPDATE users SET score = (score + {final_additional}), streak = streak + 1 WHERE ip_address = '{ip_address}'")
     conn.commit()
     cursor.close()
+    conn.close()
 
 
 # 引き分け・敗北した場合の処理を行います
 def update_score_draw_or_lose(ip_address, additional):
+    conn = mydb.connect(
+        host='localhost',
+        port='3306',
+        user='root',
+        password='BTcfrLkK1FFU',
+        database='blackjack'
+    )
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute(f"UPDATE users SET score = (score + {additional}), streak = 0 WHERE ip_address = '{ip_address}'")
     conn.commit()
     cursor.close()
+    conn.close()
 
 
 # クライアントへの時間送信

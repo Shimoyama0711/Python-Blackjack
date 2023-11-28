@@ -10,17 +10,6 @@ app = Flask(__name__)
 # Set Secret Key
 app.secret_key = "11451419114514191145141911451419"
 
-conn = mydb.connect(
-    host="localhost",
-    port=3306,
-    user="root",
-    password="BTcfrLkK1FFU",
-    database="blackjack"
-)
-
-conn.ping(reconnect=True)
-print(conn.is_connected())
-
 
 @app.route("/")
 @app.route("/index")
@@ -30,11 +19,36 @@ def index():
 
 @app.route("/navbar")
 def navbar():
-    return render_template("navbar.html")
+    ip_address = request.remote_addr
+
+    if session["username"]:
+        conn = mydb.connect(
+            host="localhost",
+            port=3306,
+            user="root",
+            password="BTcfrLkK1FFU",
+            database="blackjack"
+        )
+
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(f"SELECT * FROM users WHERE ip_address = '{ip_address}'")
+        user = cursor.fetchone()
+
+        return render_template("navbar.html", avatar=user["avatar"])
+    else:
+        return render_template("navbar.html")
 
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    conn = mydb.connect(
+        host="localhost",
+        port=3306,
+        user="root",
+        password="BTcfrLkK1FFU",
+        database="blackjack"
+    )
+
     method = request.method
 
     if method == "GET":
@@ -67,12 +81,21 @@ def login():
 
         conn.commit()
         cur.close()
+        conn.close()
 
         return render_template("index.html", msg=msg, level="success")
 
 
 @app.route("/leaderboard")
 def leaderboard():
+    conn = mydb.connect(
+        host="localhost",
+        port=3306,
+        user="root",
+        password="BTcfrLkK1FFU",
+        database="blackjack"
+    )
+
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT username, score, streak, avatar FROM users ORDER BY score DESC")
     users = cursor.fetchall()
@@ -82,6 +105,14 @@ def leaderboard():
 
 @app.route("/settings", methods=["GET", "POST"])
 def settings():
+    conn = mydb.connect(
+        host="localhost",
+        port=3306,
+        user="root",
+        password="BTcfrLkK1FFU",
+        database="blackjack"
+    )
+
     method = request.method
 
     if method == "GET":
@@ -113,6 +144,8 @@ def settings():
         cursor.execute(f"UPDATE users SET username = '{username}', avatar = '{avatar}' WHERE ip_address = '{ip_address}'")
         conn.commit()
         cursor.close()
+        conn.close()
+
 
         return render_template("settings.html", msg="設定の変更に成功しました", level="success")
 
