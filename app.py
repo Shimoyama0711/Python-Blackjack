@@ -8,7 +8,7 @@ from io import BytesIO
 app = Flask(__name__)
 
 # Set Secret Key
-app.secret_key = "11451419114514191145141911451419"
+app.secret_key = "12345678901234567890123456789012"
 
 
 @app.route("/")
@@ -21,7 +21,9 @@ def index():
 def navbar():
     ip_address = request.remote_addr
 
-    if session["username"]:
+    try:
+        username = session["username"]
+
         conn = mydb.connect(
             host="localhost",
             port=3306,
@@ -35,7 +37,7 @@ def navbar():
         user = cursor.fetchone()
 
         return render_template("navbar.html", avatar=user["avatar"])
-    else:
+    except KeyError:
         return render_template("navbar.html")
 
 
@@ -85,6 +87,14 @@ def login():
 
         return render_template("index.html", msg=msg, level="success")
 
+
+@app.route("/logout")
+def logout():
+    session["loggedin"] = False
+    session["username"] = ""
+    msg = "ログアウトしました"
+
+    return render_template("index.html", msg=msg, level="success")
 
 @app.route("/leaderboard")
 def leaderboard():
