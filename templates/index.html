@@ -18,6 +18,17 @@
             $("#navbar").load("/navbar");
         });
     </script>
+
+    <style>
+        .avatar-index {
+            border-radius: 50%; /* 50%で丸くなります */
+            width: 48px; /* 画像の幅を設定 */
+            height: 48px; /* 画像の高さを設定 */
+            padding-left: 0;
+            padding-right: 0;
+            object-fit: cover; /* 画像のサイズを調整 */
+        }
+    </style>
 </head>
 
 <body>
@@ -39,16 +50,59 @@
             </div>
         {% endif %}
 
-        <h1>Python-Blackjack</h1>
+        <h1>
+            <i class="bi-suit-spade-fill"></i>
+            Python-Blackjack
+        </h1>
 
-        <h2>Created by:</h2>
+        <h3>Created by:</h3>
 
         <ul>
             <li>T5-10 温 翔毅</li>
             <li>T5-10 酒井 脩作</li>
             <li>T5-23 下山 歩</li>
         </ul>
+
+
     </div>
+
+    {% if session.username|length > 0 %}
+        <div class="m-3 p-3 row rounded border shadow-lg">
+            <h1 class="mb-3">
+                <img class="avatar-index" alt="{{ session.username }}" src="{{ user['avatar'] }}" width="48px" height="48px">
+                Your Info
+            </h1>
+
+            <div class="row mb-3">
+                <div class="col-4">
+                    <h4>
+                        <i class="bi-tag-fill"></i>
+                        Name
+                    </h4>
+                    {{ session.username }}
+                </div>
+
+                <div class="col-4">
+                    <h4>
+                        <i class="bi-award"></i>
+                        Score
+                    </h4>
+                    {{ user["score"] }}
+                </div>
+
+                <div class="col-4">
+                    <h4>
+                        <i class="bi-controller"></i>
+                        Streak
+                    </h4>
+                    {{ user["streak"] }}
+                </div>
+            </div>
+
+            <div class="row mb-3">
+            </div>
+        </div>
+    {% endif %}
 </main>
 
 </body>

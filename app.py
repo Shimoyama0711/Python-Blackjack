@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, session
 import mysql.connector as mydb
 import base64
 from PIL import Image
@@ -14,7 +14,26 @@ app.secret_key = "12345678901234567890123456789012"
 @app.route("/")
 @app.route("/index")
 def index():
-    return render_template("index.html")
+    ip_address = request.remote_addr
+
+    try:
+        username = session["username"]
+
+        conn = mydb.connect(
+            host="localhost",
+            port=3306,
+            user="root",
+            password="BTcfrLkK1FFU",
+            database="blackjack"
+        )
+
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(f"SELECT * FROM users WHERE ip_address = '{ip_address}'")
+        user = cursor.fetchone()
+
+        return render_template("index.html", user=user)
+    except KeyError:
+        return render_template("index.html")
 
 
 @app.route("/navbar")
@@ -95,6 +114,7 @@ def logout():
     msg = "ログアウトしました"
 
     return render_template("index.html", msg=msg, level="success")
+
 
 @app.route("/leaderboard")
 def leaderboard():
