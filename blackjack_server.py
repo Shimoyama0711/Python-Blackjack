@@ -100,7 +100,8 @@ def create_user_data(ip_address):
     )
 
     cursor = conn.cursor(dictionary=True)
-    cursor.execute(f"INSERT IGNORE INTO users VALUES ('{ip_address}', 'Anonymous', '0', '0', './static/img/anonymous.png')")
+    cursor.execute(
+        f"INSERT IGNORE INTO users VALUES ('{ip_address}', 'Anonymous', '0', '0', '/static/img/anonymous.png')")
     conn.commit()
     cursor.close()
 
@@ -147,11 +148,8 @@ def update_score_draw_or_lose(ip_address, additional):
 
 
 # クライアントへの時間送信
-def main(client, client_no):
-    host = socket.gethostname()
-    print(f"host: {host}")
-
-    ip_address = socket.gethostbyname(host)
+def main(client, client_no, addr):
+    ip_address = addr[0]
     print(f"ip_address: {ip_address}")
 
     create_user_data(ip_address)
@@ -344,9 +342,9 @@ while True:
     client_no += 1
     client, addr = server.accept()
 
-    if in_game == False:
+    if not in_game:
         # スレッド
-        p = threading.Thread(target=main, args=(client, client_no))
+        p = threading.Thread(target=main, args=(client, client_no, addr))
         p.start()
     else:
         # スレッド

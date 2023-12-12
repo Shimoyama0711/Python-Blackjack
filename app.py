@@ -84,27 +84,30 @@ def login():
 
         # sql = f"INSERT INTO users (`email`, `username`, `score`, `streak`, `avatar`) VALUES ('{email}', '{username}', '0', '0', NULL) ON DUPLICATE KEY UPDATE `username` = VALUES(username)"
 
-        cur = conn.cursor(dictionary=True)
+        cursor = conn.cursor(dictionary=True)
 
         print(select_sql)
-        cur.execute(select_sql)
+        cursor.execute(select_sql)
 
         # ユーザーが存在するならば
-        if cur.fetchone():
-            cur.execute(f"UPDATE users SET username = '{username}' WHERE ip_address = '{ip_address}'")
+        if cursor.fetchone():
+            cursor.execute(f"UPDATE users SET username = '{username}' WHERE ip_address = '{ip_address}'")
         else:  # 存在しないならば
-            print(f"INSERT INTO users (ip_address, username, score, streak, avatar) VALUES ('{ip_address}', '{username}', 0, 0, NULL)")
-            cur.execute(f"INSERT INTO users (ip_address, username, score, streak, avatar) VALUES ('{ip_address}', '{username}', 0, 0, NULL)")
+            print(f"INSERT INTO users (ip_address, username, score, streak, avatar) VALUES ('{ip_address}', '{username}', '0', '0', '/static/img/anonymous.png')")
+            cursor.execute(f"INSERT INTO users (ip_address, username, score, streak, avatar) VALUES ('{ip_address}', '{username}', '0', '0', '/static/img/anonymous.png')")
 
         session["loggedin"] = True
         session["username"] = username
         msg = "ログインに成功しました"
 
+        cursor.execute(f"SELECT * FROM users WHERE ip_address = '{ip_address}'")
+        user = cursor.fetchone()
+
         conn.commit()
-        cur.close()
+        cursor.close()
         conn.close()
 
-        return render_template("index.html", msg=msg, level="success")
+        return render_template("index.html", user=user, msg=msg, level="success")
 
 
 @app.route("/logout")
@@ -152,7 +155,7 @@ def settings():
 
         ip_address = request.remote_addr
         username = form.get("username")
-        avatar = "./static/img/anonymous.png"
+        avatar = "/static/img/anonymous.png"
 
         if 'avatar' in request.files:
             image_file = request.files['avatar']
